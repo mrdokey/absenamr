@@ -59,7 +59,7 @@
             <button onclick="pressNum('7')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">7</button>
             <button onclick="pressNum('8')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">8</button>
             <button onclick="pressNum('9')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">9</button>
-            <button onclick="clearPin()" class="h-16 rounded-2xl bg-red-950/40 text-red-500 font-bold text-lg active:scale-95 smooth-transition">CLEAR</button>
+            <button onclick="clearPin()" class="h-16 rounded-2xl bg-red-950/40 text-red-500 font-bold text-sm active:scale-95 smooth-transition">CLEAR</button>
             <button onclick="pressNum('0')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">0</button>
             <button onclick="backspacePin()" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-lg active:scale-95 smooth-transition flex items-center justify-center text-amber-500"><i data-lucide="delete" class="w-6 h-6"></i></button>
         </div>
@@ -67,21 +67,28 @@
     </div>
 
     <!-- 4. SCREEN ACTION SELECTION -->
-    <div id="action-screen" class="hidden-screen fixed inset-0 bg-slate-900 flex flex-col items-center justify-center p-6 smooth-transition">
+    <div id="action-screen" class="hidden-screen fixed inset-0 bg-slate-900 flex flex-col items-center justify-center p-6 smooth-transition z-[40]">
         <div class="w-full max-w-sm text-center">
             <h3 class="text-xl text-slate-400">Selamat Datang,</h3>
             <h2 id="emp-name" class="text-3xl font-black text-white mt-1 tracking-tight">Karyawan</h2>
             
             <div class="my-8 bg-slate-950/50 border border-slate-800 rounded-2xl p-5">
                 <p id="status-msg" class="text-sm font-semibold text-slate-300">Memeriksa status...</p>
-                <!-- KOTAK UNTUK TIMER DETIK (REAL-TIME) -->
+                <!-- WADAH TIMER DIPISAHKAN AGAR TIDAK MENGGANGGU TOMBOL -->
+                <div id="timer-container" class="mt-4 hidden-screen">
+                    <p class="text-xs text-slate-400">Tombol Pulang Aktif Dalam:</p>
+                    <p id="status-timer" class="text-3xl font-black text-amber-500 tracking-wider font-mono mt-1"></p>
+                </div>
                 <p id="status-sub" class="text-sm mt-3 font-bold text-amber-500"></p>
             </div>
 
-            <div class="flex flex-col gap-3 w-full">
+            <div class="flex flex-col gap-3 w-full relative z-[50]">
                 <button id="btn-clock-in" onclick="startCapture('IN')" class="hidden-screen py-4 bg-emerald-500 text-slate-950 text-lg font-black rounded-2xl active:scale-95 smooth-transition shadow-lg">ABSEN MASUK</button>
                 <button id="btn-clock-out" onclick="startCapture('OUT')" class="hidden-screen py-4 bg-rose-500 text-white text-lg font-black rounded-2xl active:scale-95 smooth-transition shadow-lg">ABSEN PULANG</button>
-                <button id="btn-bypass" onclick="openBypassModal()" class="hidden-screen py-3 bg-amber-500/10 text-amber-500 border border-amber-500/30 text-sm font-bold rounded-2xl active:scale-95 smooth-transition">IZIN PULANG CEPAT</button>
+                
+                <!-- TOMBOL BYPASS DIPASTIKAN BISA DIKLIK -->
+                <button id="btn-bypass" onclick="openBypassModal()" class="hidden-screen py-4 bg-amber-500/10 text-amber-500 border border-amber-500/30 text-sm font-bold rounded-2xl active:scale-95 smooth-transition relative z-[60] cursor-pointer">IZIN PULANG CEPAT</button>
+                
                 <button onclick="cancelAction()" class="py-3 text-slate-400 font-semibold text-sm">Batal</button>
             </div>
         </div>
@@ -121,8 +128,8 @@
         </div>
     </div>
 
-    <!-- MODAL BYPASS -->
-    <div id="modal-bypass" class="hidden-screen fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 smooth-transition">
+    <!-- MODAL BYPASS (Z-INDEX DIPERKUAT) -->
+    <div id="modal-bypass" class="hidden-screen fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4 smooth-transition">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-sm p-6 shadow-2xl">
             <h3 class="text-lg font-bold text-white mb-2">Form Pulang Cepat</h3>
             <p class="text-xs text-slate-400 mb-4">Mohon pilih alasan & minta verifikasi atasan.</p>
@@ -174,7 +181,7 @@
         let currentActionType = ""; 
         let currentLatLong = "";
         let streamObject = null;
-        let countdownInterval; // Variabel interval timer
+        let countdownInterval;
 
         let isBypassRequest = false;
         let bypassReason = "";
@@ -302,37 +309,31 @@
             }
         }
 
-        // --- SISTEM DETIK TIMER HITUNG MUNDUR (COUNTDOWN) ---
         function startLiveTimer(durationMs) {
-            clearInterval(countdownInterval); // Bersihkan sisa timer sebelumnya jika ada
+            clearInterval(countdownInterval); 
             let msRemaining = durationMs;
-            const subElement = document.getElementById('status-sub');
+            
+            const timerContainer = document.getElementById('timer-container');
+            const timerText = document.getElementById('status-timer');
+            
+            timerContainer.classList.remove('hidden-screen');
 
             function updateTimerVisual() {
                 if (msRemaining <= 0) {
                     clearInterval(countdownInterval);
-                    // Jika waktu habis, paksa verifikasi ulang PIN agar tombol pulang terbuka otomatis
-                    verifyPin();
+                    verifyPin(); 
                     return;
                 }
 
-                // Kalkulasi ke Jam : Menit : Detik harian
                 let hours = Math.floor(msRemaining / (1000 * 60 * 60));
                 let minutes = Math.floor((msRemaining % (1000 * 60 * 60)) / (1000 * 60));
                 let seconds = Math.floor((msRemaining % (1000 * 60)) / 1000);
 
-                // Format dua angka (contoh: 08:05:02)
-                let timeStr = [hours, minutes, seconds].map(v => v < 10 ? "0" + v : v).join(":");
-
-                subElement.innerHTML = `
-                    <span class="text-xs text-slate-400">Tombol Pulang Aktif Dalam:</span><br>
-                    <span class="text-2xl font-black text-amber-500 tracking-wider font-mono">${timeStr}</span>
-                `;
-
-                msRemaining -= 1000; // Kurangi 1 detik
+                timerText.innerText = [hours, minutes, seconds].map(v => v < 10 ? "0" + v : v).join(":");
+                msRemaining -= 1000; 
             }
 
-            updateTimerVisual(); // Jalankan sekali instan tanpa nunggu 1 detik pertama
+            updateTimerVisual(); 
             countdownInterval = setInterval(updateTimerVisual, 1000);
         }
 
@@ -342,9 +343,10 @@
             
             const msg = document.getElementById('status-msg');
             const sub = document.getElementById('status-sub');
+            const timerContainer = document.getElementById('timer-container');
             
-            // Matikan interval lama jika ada
             clearInterval(countdownInterval);
+            timerContainer.classList.add('hidden-screen');
             sub.innerHTML = "";
 
             document.getElementById('btn-clock-in').classList.add('hidden-screen');
@@ -362,12 +364,12 @@
                     sub.innerText = "Anda sudah diizinkan melakukan Absen Pulang.";
                     document.getElementById('btn-clock-out').classList.remove('hidden-screen');
                 } else {
-                    // JIKA TERKUNCI: Nyalakan Detik Timer Mundur secara Real-time!
                     if (verifiedUser.remainingMs) {
                         startLiveTimer(verifiedUser.remainingMs);
                     } else {
-                        sub.innerText = "Menghitung sisa shift kerja...";
+                        sub.innerText = verifiedUser.remaining;
                     }
+                    // TAMPILKAN TOMBOL BYPASS DENGAN AMAN
                     document.getElementById('btn-bypass').classList.remove('hidden-screen'); 
                 }
             }
@@ -477,8 +479,19 @@
             }
         }
 
-        function openBypassModal() { openModal('modal-bypass'); }
-        function closeModal(id) { document.getElementById(id).classList.add('hidden-screen'); }
+        function openBypassModal() { 
+            // Pastikan timer berhenti sejenak saat pop-up izin terbuka agar aman dari bentrok klik
+            clearInterval(countdownInterval);
+            openModal('modal-bypass'); 
+        }
+        
+        function closeModal(id) { 
+            document.getElementById(id).classList.add('hidden-screen'); 
+            // Nyalakan kembali timer jika batal izin
+            if(id === 'modal-bypass' && verifiedUser.remainingMs) {
+                startLiveTimer(verifiedUser.remainingMs);
+            }
+        }
 
         function submitBypass() {
             const reason = document.getElementById('bypass-reason').value;
