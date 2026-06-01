@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kiosk Absensi</title>
+    <title>Kiosk Absensi LABARAC</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="https://i.ibb.co.com/934bwtWJ/1780277980692.png">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -19,30 +19,30 @@
 </head>
 <body class="h-[100dvh] w-screen flex flex-col select-none text-slate-100">
 
-    <!-- 1. SPLASH SCREEN -->
+    <!-- 1. SPLASH SCREEN (LOGO ABSENSI) -->
     <div id="splash-screen" class="fixed inset-0 bg-[#0f172a] z-[100] flex flex-col items-center justify-center smooth-transition">
         <img src="https://i.ibb.co.com/934bwtWJ/1780277980692.png" alt="Loading" class="w-48 animate-pulse mb-4">
         <p class="text-slate-300 text-sm font-semibold tracking-widest animate-bounce">MEMUAT SISTEM ABSENSI...</p>
     </div>
 
-    <!-- 2. SCREEN AKTIVASI -->
+    <!-- 2. SCREEN AKTIVASI (White Label) -->
     <div id="activation-screen" class="hidden-screen fixed inset-0 bg-slate-950 z-50 flex items-center justify-center p-4 smooth-transition">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl w-full max-w-md p-8 text-center">
             <img src="https://i.ibb.co.com/934bwtWJ/1780277980692.png" class="w-24 h-24 mx-auto mb-4">
             <h2 class="text-2xl font-bold text-white mb-2">Aktivasi Absensi</h2>
             <p class="text-xs text-slate-400 mb-6">Masukkan URL API dari MRD Solution</p>
             <input type="url" id="api-input" placeholder="Masukkan URL API..." class="w-full px-4 py-3 bg-slate-950 border-2 border-slate-800 text-white rounded-xl focus:border-amber-500 outline-none mb-4 text-sm text-center smooth-transition">
-            <button onclick="activateSystem()" id="btn-activate" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 rounded-xl smooth-transition shadow-lg shadow-amber-500/20">Aktifkan Kiosk</button>
+            <button onclick="activateSystem()" id="btn-activate" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 rounded-xl smooth-transition shadow-lg">Aktifkan Kiosk</button>
         </div>
     </div>
 
-    <!-- 3. SCREEN PIN INPUT (MAIN KIOSK INPUT) -->
+    <!-- 3. SCREEN PIN INPUT (VIRTUAL NUMPAD - ATM STYLE) -->
     <div id="pin-screen" class="hidden-screen h-full w-full flex flex-col items-center justify-center p-6 bg-slate-900">
         <img src="https://i.ibb.co.com/934bwtWJ/1780277980692.png" class="w-24 h-24 mb-4">
-        <h2 id="absen-resto-name" class="text-xl font-bold text-amber-500 uppercase tracking-widest mb-2">LABARAK BAR</h2>
+        <h2 id="absen-resto-name" class="text-xl font-bold text-amber-500 uppercase tracking-widest mb-2">LABARAC BAR</h2>
         <p class="text-xs text-slate-400 mb-6 uppercase tracking-wider">Ketik PIN Anda untuk Absen</p>
         
-        <!-- PIN Dots -->
+        <!-- PIN Dots Indicator -->
         <div class="flex gap-4 justify-center mb-8">
             <span class="pin-dot w-4 h-4 rounded-full border-2 border-slate-600 bg-transparent transition-all"></span>
             <span class="pin-dot w-4 h-4 rounded-full border-2 border-slate-600 bg-transparent transition-all"></span>
@@ -50,7 +50,7 @@
             <span class="pin-dot w-4 h-4 rounded-full border-2 border-slate-600 bg-transparent transition-all"></span>
         </div>
 
-        <!-- VIRTUAL NUMPAD -->
+        <!-- VIRTUAL KEYPAD (Touchscreen Kiosk) -->
         <div class="grid grid-cols-3 gap-4 w-full max-w-xs mb-4">
             <button onclick="pressNum('1')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">1</button>
             <button onclick="pressNum('2')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">2</button>
@@ -68,14 +68,14 @@
         <button onclick="resetLicense()" class="text-[10px] text-red-500 uppercase font-bold mt-4 tracking-wider hover:bg-red-950/20 px-3 py-1.5 rounded-lg smooth-transition">Hapus Lisensi API</button>
     </div>
 
-    <!-- 4. SCREEN ACTION SELECTION (IN / OUT) -->
+    <!-- 4. SCREEN ACTION SELECTION (ABSEN MASUK / PULANG / IZIN) -->
     <div id="action-screen" class="hidden-screen fixed inset-0 bg-slate-900 flex flex-col items-center justify-center p-6 smooth-transition">
         <div class="w-full max-w-sm text-center">
             <h3 class="text-xl text-slate-400">Selamat Datang,</h3>
             <h2 id="emp-name" class="text-3xl font-black text-white mt-1 tracking-tight">Karyawan</h2>
             
             <div class="my-8 bg-slate-950/50 border border-slate-800 rounded-2xl p-5">
-                <p id="status-msg" class="text-sm font-semibold text-slate-300">Memeriksa status kehadiran...</p>
+                <p id="status-msg" class="text-sm font-semibold text-slate-300">Memeriksa status...</p>
                 <p id="status-sub" class="text-xs text-amber-500 mt-2 font-bold"></p>
             </div>
 
@@ -109,7 +109,7 @@
         </div>
     </div>
 
-    <!-- 6. SCREEN SUCCESS (AUTO-RESET) -->
+    <!-- 6. SCREEN SUCCESS (AUTO-RESET 3 DETIK) -->
     <div id="success-screen" class="hidden-screen fixed inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center p-6 smooth-transition">
         <div class="text-center">
             <div class="w-24 h-24 bg-emerald-500/10 border border-emerald-500/30 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -117,11 +117,11 @@
             </div>
             <h2 class="text-3xl font-black text-white tracking-tight">Absen Berhasil!</h2>
             <p id="success-msg" class="text-slate-400 mt-2">Data absensi Anda telah tercatat.</p>
-            <p class="text-[10px] text-amber-500/60 uppercase tracking-widest mt-8 animate-pulse">Layar reset otomatis dalam 3 detik...</p>
+            <p class="text-[10px] text-amber-500/60 uppercase tracking-widest mt-8 animate-pulse">Kiosk reset otomatis dalam 3 detik...</p>
         </div>
     </div>
 
-    <!-- MODAL: BYPASS ATASAN (IZIN PULANG CEPAT) -->
+    <!-- 7. MODAL: BYPASS ATASAN (IZIN PULANG CEPAT) -->
     <div id="modal-bypass" class="hidden-screen fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 smooth-transition">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-sm p-6 shadow-2xl">
             <h3 class="text-lg font-bold text-white mb-2">Form Pulang Cepat</h3>
@@ -135,7 +135,7 @@
                 <option value="Izin Lainnya">Izin Lainnya (Disetujui)</option>
             </select>
 
-            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">PIN Manager / HRD</label>
+            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">PIN Manager / HRD / Owner</label>
             <input type="password" id="bypass-manager-pin" maxlength="6" pattern="[0-9]*" placeholder="******" class="w-full mt-1 mb-6 p-3 bg-slate-950 border border-slate-800 text-white text-center text-xl tracking-[0.5em] rounded-xl outline-none focus:border-amber-500">
 
             <div class="flex gap-2">
@@ -145,10 +145,28 @@
         </div>
     </div>
 
+    <!-- 8. FLOATING INSTALL PWA BANNER (AGRESIF) -->
+    <div id="install-banner" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-sm px-4 z-[99] smooth-transition">
+        <div class="bg-slate-800 text-slate-100 p-4 rounded-2xl shadow-2xl flex items-center justify-between gap-4 border border-slate-700">
+            <div class="flex items-center gap-3">
+                <img src="https://i.ibb.co.com/934bwtWJ/1780277980692.png" class="w-10 h-10 rounded-xl shadow-md">
+                <div>
+                    <h4 class="text-xs font-bold leading-tight">Install App Absen</h4>
+                    <p class="text-[10px] text-slate-400">Akses cepat di layar utama</p>
+                </div>
+            </div>
+            <div class="flex gap-2 shrink-0">
+                <button onclick="dismissInstallBanner()" class="text-xs text-slate-400 px-2 py-1">Nanti</button>
+                <button onclick="triggerNativeInstall()" class="bg-amber-500 text-slate-950 px-3 py-1.5 rounded-lg text-xs font-black shadow-sm">INSTALL</button>
+            </div>
+        </div>
+    </div>
+
     <!-- SCRIPT LOGIC -->
     <script>
         lucide.createIcons();
 
+        // API & Storage Keys
         const STORAGE_API = "MRD_API_URL";
         let GAS_URL = localStorage.getItem(STORAGE_API);
         
@@ -161,8 +179,35 @@
         let isBypassRequest = false;
         let bypassReason = "";
         let bypassManagerPin = "";
+        let deferredPrompt;
 
-        // PIN Dot Handler
+        // PWA INTERCEPTOR (AGRESIF PROMPT)
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            showInstallBanner();
+        });
+
+        function showInstallBanner() {
+            if (GAS_URL) {
+                document.getElementById('install-banner').classList.remove('hidden');
+            }
+        }
+
+        function dismissInstallBanner() {
+            document.getElementById('install-banner').classList.add('hidden');
+        }
+
+        async function triggerNativeInstall() {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response: ${outcome}`);
+            deferredPrompt = null;
+            dismissInstallBanner();
+        }
+
+        // VIRTUAL NUMPAD HANDLER
         function updatePinDots() {
             const dots = document.querySelectorAll('.pin-dot');
             dots.forEach((dot, idx) => {
@@ -188,7 +233,7 @@
             updatePinDots();
         }
 
-        // --- SISTEM AKTIVASI & LOGIN PIN ---
+        // --- SISTEM AKTIVASI & LOGIN ---
         async function activateSystem() {
             const input = document.getElementById('api-input').value;
             if(!input) return alert("Masukkan URL!");
@@ -245,7 +290,7 @@
             }
         }
 
-        // --- SCREEN ACTION ---
+        // --- SCREEN ACTION SELECTION ---
         function openActionScreen() {
             showScreen('action-screen');
             document.getElementById('emp-name').innerText = verifiedUser.name;
@@ -253,7 +298,6 @@
             const msg = document.getElementById('status-msg');
             const sub = document.getElementById('status-sub');
             
-            // Sembunyikan semua tombol action dulu
             document.getElementById('btn-clock-in').classList.add('hidden-screen');
             document.getElementById('btn-clock-out').classList.add('hidden-screen');
             document.getElementById('btn-bypass').classList.add('hidden-screen');
@@ -263,14 +307,14 @@
                 sub.innerText = "Silakan melakukan Absen Masuk untuk mulai bekerja.";
                 document.getElementById('btn-clock-in').classList.remove('hidden-screen');
             } else {
-                msg.innerText = verifiedUser.message; // Menampilkan info durasi saat ini
+                msg.innerText = verifiedUser.message; 
                 
                 if (verifiedUser.canClockOut) {
                     sub.innerText = "Anda sudah diizinkan melakukan Absen Pulang.";
                     document.getElementById('btn-clock-out').classList.remove('hidden-screen');
                 } else {
-                    sub.innerText = verifiedUser.remaining; // Tampilkan sisa waktu hitung mundur
-                    document.getElementById('btn-bypass').classList.remove('hidden-screen'); // Tampilkan tombol Izin
+                    sub.innerText = verifiedUser.remaining; 
+                    document.getElementById('btn-bypass').classList.remove('hidden-screen'); 
                 }
             }
         }
@@ -293,7 +337,7 @@
                 streamObject = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
                 document.getElementById('webcam').srcObject = streamObject;
             } catch (e) {
-                alert("Gagal mengakses kamera depan!");
+                alert("Gagal mengakses kamera depan! Izinkan kamera di browser.");
             }
         }
 
@@ -357,6 +401,7 @@
                     document.getElementById('success-msg').innerText = json.message;
                     showScreen('success-screen');
                     
+                    // Auto-Reset Kiosk dalam 3 detik untuk karyawan berikutnya
                     setTimeout(() => {
                         resetKiosk();
                     }, 3000);
@@ -376,9 +421,8 @@
             }
         }
 
-        function openBypassModal() {
-            openModal('modal-bypass');
-        }
+        function openBypassModal() { openModal('modal-bypass'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden-screen'); }
 
         function submitBypass() {
             const reason = document.getElementById('bypass-reason').value;
@@ -403,7 +447,7 @@
             showScreen('pin-screen');
         }
 
-        // --- SISTEM STARTUP AMAN ---
+        // --- SISTEM STARTUP AMAN (NO REFERENCES ERROR) ---
         window.onload = () => {
             setTimeout(() => {
                 const splash = document.getElementById('splash-screen');
