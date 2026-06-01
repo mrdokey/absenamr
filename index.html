@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kiosk Absensi</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="https://i.ibb.co.com/934bwtWJ/1780277980692.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0f172a; overflow: hidden; }
+        .hidden-screen { display: none !important; }
+        .smooth-transition { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .fade-out { animation: fadeOut 0.5s forwards; }
+        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
+    </style>
+</head>
+<body class="h-[100dvh] w-screen flex flex-col select-none text-slate-100">
+
+    <!-- 1. SPLASH SCREEN (LOGO REQ) -->
+    <div id="splash-screen" class="fixed inset-0 bg-[#0f172a] z-[100] flex flex-col items-center justify-center smooth-transition">
+        <img src="https://i.ibb.co.com/934bwtWJ/1780277980692.png" alt="Loading" class="w-48 animate-pulse mb-4">
+        <p class="text-slate-300 text-sm font-semibold tracking-widest animate-bounce">MEMUAT SISTEM ABSENSI...</p>
+    </div>
+
+    <!-- 2. SCREEN AKTIVASI -->
+    <div id="activation-screen" class="hidden-screen fixed inset-0 bg-slate-950 z-50 flex items-center justify-center p-4 smooth-transition">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl w-full max-w-md p-8 text-center">
+            <img src="https://i.ibb.co.com/934bwtWJ/1780277980692.png" class="w-24 h-24 mx-auto mb-4">
+            <h2 class="text-2xl font-bold text-white mb-2">Aktivasi Absensi</h2>
+            <p class="text-xs text-slate-400 mb-6">Masukkan URL API dari MRD Solution</p>
+            <input type="url" id="api-input" placeholder="Masukkan URL API..." class="w-full px-4 py-3 bg-slate-950 border-2 border-slate-800 text-white rounded-xl focus:border-amber-500 outline-none mb-4 text-sm text-center smooth-transition">
+            <button onclick="activateSystem()" id="btn-activate" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 rounded-xl smooth-transition shadow-lg shadow-amber-500/20">Aktifkan Kiosk</button>
+        </div>
+    </div>
+
+    <!-- 3. SCREEN PIN INPUT (MAIN KIOSK INPUT) -->
+    <div id="pin-screen" class="hidden-screen h-full w-full flex flex-col items-center justify-center p-6 bg-slate-900">
+        <img src="https://i.ibb.co.com/934bwtWJ/1780277980692.png" class="w-24 h-24 mb-4">
+        <h2 id="absen-resto-name" class="text-xl font-bold text-amber-500 uppercase tracking-widest mb-2">LABARAK BAR</h2>
+        <p class="text-xs text-slate-400 mb-6 uppercase tracking-wider">Ketik PIN Anda untuk Absen</p>
+        
+        <!-- PIN Dots Indicator -->
+        <div class="flex gap-4 justify-center mb-8">
+            <span class="pin-dot w-4 h-4 rounded-full border-2 border-slate-600 bg-transparent transition-all"></span>
+            <span class="pin-dot w-4 h-4 rounded-full border-2 border-slate-600 bg-transparent transition-all"></span>
+            <span class="pin-dot w-4 h-4 rounded-full border-2 border-slate-600 bg-transparent transition-all"></span>
+            <span class="pin-dot w-4 h-4 rounded-full border-2 border-slate-600 bg-transparent transition-all"></span>
+        </div>
+
+        <!-- VIRTUAL NUMPAD (Touchscreen Kiosk Friendly) -->
+        <div class="grid grid-cols-3 gap-4 w-full max-w-xs mb-4">
+            <button onclick="pressNum('1')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">1</button>
+            <button onclick="pressNum('2')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">2</button>
+            <button onclick="pressNum('3')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">3</button>
+            <button onclick="pressNum('4')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">4</button>
+            <button onclick="pressNum('5')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">5</button>
+            <button onclick="pressNum('6')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">6</button>
+            <button onclick="pressNum('7')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">7</button>
+            <button onclick="pressNum('8')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">8</button>
+            <button onclick="pressNum('9')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">9</button>
+            <button onclick="clearPin()" class="h-16 rounded-2xl bg-red-950/40 text-red-500 font-bold text-lg active:scale-95 smooth-transition">CLEAR</button>
+            <button onclick="pressNum('0')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">0</button>
+            <button onclick="verifyPin()" id="btn-verify" class="h-16 rounded-2xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-lg active:scale-95 smooth-transition">ENTER</button>
+        </div>
+        <button onclick="resetLicense()" class="text-[10px] text-red-500 uppercase font-bold mt-4 tracking-wider hover:bg-red-950/20 px-3 py-1.5 rounded-lg smooth-transition">Hapus Lisensi API</button>
+    </div>
+
+    <!-- 4. SCREEN ACTION SELECTION (IN / OUT) -->
+    <div id="action-screen" class="hidden-screen fixed inset-0 bg-slate-900 flex flex-col items-center justify-center p-6 smooth-transition">
+        <div class="w-full max-w-sm text-center">
+            <h3 class="text-xl text-slate-400">Selamat Datang,</h3>
+            <h2 id="emp-name" class="text-3xl font-black text-white mt-1 tracking-tight">Karyawan</h2>
+            
+            <div class="my-8 bg-slate-950/50 border border-slate-800 rounded-2xl p-5">
+                <p id="status-msg" class="text-sm font-semibold text-slate-300">Memeriksa status kehadiran...</p>
+                <p id="status-sub" class="text-xs text-amber-500 mt-2 font-bold"></p>
+            </div>
+
+            <div class="flex flex-col gap-3 w-full">
+                <button id="btn-clock-in" onclick="startCapture('IN')" class="hidden-screen py-4 bg-emerald-500 text-slate-950 text-lg font-black rounded-2xl active:scale-95 smooth-transition shadow-lg shadow-emerald-500/10">ABSEN MASUK</button>
+                <button id="btn-clock-out" onclick="startCapture('OUT')" class="hidden-screen py-4 bg-rose-500 text-white text-lg font-black rounded-2xl active:scale-95 smooth-transition shadow-lg shadow-rose-500/10">ABSEN PULANG</button>
+                <button id="btn-bypass" onclick="openBypassModal()" class="hidden-screen py-3 bg-amber-500/10 text-amber-500 border border-amber-500/30 text-sm font-bold rounded-2xl active:scale-95 smooth-transition">IZIN PULANG CEPAT</button>
+                <button onclick="cancelAction()" class="py-3 text-slate-400 font-semibold text-sm">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. SCREEN CAMERA & GPS CAPTURE -->
+    <div id="capture-screen" class="hidden-screen fixed inset-0 bg-slate-950 z-30 flex flex-col items-center justify-between p-6">
+        <div class="text-center mt-4">
+            <h2 class="text-xl font-bold text-white">Verifikasi Keamanan</h2>
+            <p class="text-xs text-slate-400 mt-1">Mengunci GPS & Scan Wajah...</p>
+        </div>
+
+        <!-- Live Camera View -->
+        <div class="relative w-72 h-72 rounded-full overflow-hidden border-4 border-amber-500 shadow-2xl">
+            <video id="webcam" autoplay playsinline class="w-full h-full object-cover scale-x-[-1]"></video>
+            <canvas id="canvas" width="400" height="400" class="hidden"></canvas>
+        </div>
+
+        <!-- Info GPS & Progress -->
+        <div class="w-full max-w-xs text-center mb-4">
+            <div class="flex items-center justify-center gap-2 text-slate-300 text-sm mb-4">
+                <i data-lucide="map-pin" class="w-4 h-4 text-amber-500 animate-bounce"></i>
+                <span id="gps-status">Mengunci Lokasi GPS...</span>
+            </div>
+            <button onclick="capture()" id="btn-snap" class="w-full py-4 bg-amber-500 text-slate-950 font-black rounded-2xl shadow-lg active:scale-95 smooth-transition" disabled>AMBIL FOTO</button>
+        </div>
+    </div>
+
+    <!-- 6. SCREEN SUCCESS (AUTO-RESET) -->
+    <div id="success-screen" class="hidden-screen fixed inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center p-6 smooth-transition">
+        <div class="text-center">
+            <div class="w-24 h-24 bg-emerald-500/10 border border-emerald-500/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i data-lucide="check" class="w-12 h-12 text-emerald-500"></i>
+            </div>
+            <h2 class="text-3xl font-black text-white tracking-tight">Absen Berhasil!</h2>
+            <p id="success-msg" class="text-slate-400 mt-2">Data absensi Anda telah tercatat.</p>
+            <p class="text-[10px] text-amber-500/60 uppercase tracking-widest mt-8 animate-pulse">Layar reset otomatis dalam 3 detik...</p>
+        </div>
+    </div>
+
+    <!-- MODAL: BYPASS ATASAN (IZIN PULANG CEPAT) -->
+    <div id="modal-bypass" class="hidden-screen fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 smooth-transition">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-sm p-6 shadow-2xl">
+            <h3 class="text-lg font-bold text-white mb-2">Form Pulang Cepat</h3>
+            <p class="text-xs text-slate-400 mb-4">Mohon pilih alasan & minta verifikasi atasan.</p>
+            
+            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Alasan Izin</label>
+            <select id="bypass-reason" class="w-full mt-1 mb-4 p-3 bg-slate-950 border border-slate-800 text-white rounded-xl outline-none text-sm">
+                <option value="Sakit">Sakit / Kurang Sehat</option>
+                <option value="Keperluan Keluarga">Izin Keperluan Keluarga Urgent</option>
+                <option value="Kecelakaan / Musibah">Musibah / Keadaan Darurat</option>
+                <option value="Izin Lainnya">Izin Lainnya (Disetujui)</option>
+            </select>
+
+            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">PIN Manager / HRD</label>
+            <input type="password" id="bypass-manager-pin" maxlength="6" pattern="[0-9]*" placeholder="******" class="w-full mt-1 mb-6 p-3 bg-slate-950 border border-slate-800 text-white text-center text-xl tracking-[0.5em] rounded-xl outline-none focus:border-amber-500">
+
+            <div class="flex gap-2">
+                <button onclick="closeModal('modal-bypass')" class="flex-1 py-3 text-slate-400 font-semibold text-sm">Batal</button>
+                <button onclick="submitBypass()" class="flex-1 py-3 bg-amber-500 text-slate-950 font-bold rounded-xl text-sm">Verifikasi Izin</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT LOGIC -->
+    <script>
+        lucide.createIcons();
+
+        const STORAGE_API = "MRD_API_URL";
+        let GAS_URL = localStorage.getItem(STORAGE_API);
+        
+        let currentPin = "";
+        let verifiedUser = {};
+        let currentActionType = ""; // "IN" atau "OUT"
+        let currentLatLong = "";
+        let streamObject = null;
+
+        // IsBypass flag
+        let isBypassRequest = false;
+        let bypassReason = "";
+        let bypassManagerPin = "";
+
+        // PIN Dot Handler
+        function updatePinDots() {
+            const dots = document.querySelectorAll('.pin-dot');
+            dots.forEach((dot, idx) => {
+                if (idx < currentPin.length) {
+                    dot.classList.remove('border-slate-600', 'bg-transparent');
+                    dot.classList.add('border-amber-500', 'bg-amber-500');
+                } else {
+                    dot.classList.remove('border-amber-500', 'bg-amber-500');
+                    dot.classList.add('border-slate-600', 'bg-transparent');
+                }
+            });
+        }
+
+        function pressNum(num) {
+            if (currentPin.length < 4) {
+                currentPin += num;
+                updatePinDots();
+            }
+        }
+
+        function clearPin() {
+            currentPin = "";
+            updatePinDots();
+        }
+
+        // --- SISTEM AKTIVASI & LOGIN PIN ---
+        async function activateSystem() {
+            const input = document.getElementById('api-input').value;
+            if(!input) return alert("Masukkan URL!");
+            const btn = document.getElementById('btn-activate');
+            btn.innerText = "Memeriksa...";
+            try {
+                const res = await fetch(input, { method: 'POST', body: JSON.stringify({ action: 'getConfig' }) });
+                const json = await res.json();
+                if(json.success) {
+                    localStorage.setItem(STORAGE_API, input);
+                    GAS_URL = input;
+                    window.location.reload();
+                } else throw new Error("Gagal");
+            } catch (e) {
+                alert("URL API tidak valid!");
+                btn.innerHTML = "Aktifkan Kiosk";
+            }
+        }
+
+        async function fetchConfigBg() {
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'getConfig' }) });
+                const json = await res.json();
+                if(json.success) document.getElementById('absen-resto-name').innerText = json.data["NAMA_PERUSAAN"] || "RESTO";
+            } catch(e) {}
+        }
+
+        async function verifyPin() {
+            if(currentPin.length < 4) return;
+            const btn = document.getElementById('btn-verify');
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto"></i>`;
+            lucide.createIcons();
+
+            try {
+                const res = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "checkUserStatus", data: { pin: currentPin } })
+                });
+                const json = await res.json();
+                
+                if (json.success) {
+                    verifiedUser = json;
+                    openActionScreen();
+                } else {
+                    alert(json.message);
+                    clearPin();
+                }
+            } catch (e) {
+                alert("Koneksi gagal ke database!");
+            } finally {
+                btn.innerText = "ENTER";
+            }
+        }
+
+        // --- SCREEN ACTION ---
+        function openActionScreen() {
+            showScreen('action-screen');
+            document.getElementById('emp-name').innerText = verifiedUser.name;
+            
+            const msg = document.getElementById('status-msg');
+            const sub = document.getElementById('status-sub');
+            
+            // Sembunyikan semua tombol action dulu
+            document.getElementById('btn-clock-in').classList.add('hidden-screen');
+            document.getElementById('btn-clock-out').classList.add('hidden-screen');
+            document.getElementById('btn-bypass').classList.add('hidden-screen');
+
+            if (verifiedUser.status === "OUT") {
+                msg.innerText = "Status: Diluar Shift (OUT)";
+                sub.innerText = "Silakan melakukan Absen Masuk untuk mulai bekerja.";
+                document.getElementById('btn-clock-in').classList.remove('hidden-screen');
+            } else {
+                msg.innerText = verifiedUser.message; // Menampilkan info durasi saat ini
+                
+                if (verifiedUser.canClockOut) {
+                    sub.innerText = "Anda sudah diizinkan melakukan Absen Pulang.";
+                    document.getElementById('btn-clock-out').classList.remove('hidden-screen');
+                } else {
+                    sub.innerText = verifiedUser.remaining; // Tampilkan sisa waktu hitung mundur
+                    document.getElementById('btn-bypass').classList.remove('hidden-screen'); // Tampilkan tombol Izin
+                }
+            }
+        }
+
+        function cancelAction() {
+            clearPin();
+            showScreen('pin-screen');
+        }
+
+        // --- SISTEM KAMERA & GPS ---
+        function startCapture(type) {
+            currentActionType = type;
+            showScreen('capture-screen');
+            initCamera();
+            initGPS();
+        }
+
+        async function initCamera() {
+            try {
+                streamObject = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                document.getElementById('webcam').srcObject = streamObject;
+            } catch (e) {
+                alert("Gagal mengakses kamera depan!");
+            }
+        }
+
+        function initGPS() {
+            const gpsText = document.getElementById('gps-status');
+            const snapBtn = document.getElementById('btn-snap');
+            snapBtn.disabled = true;
+
+            if (!navigator.geolocation) {
+                gpsText.innerText = "GPS tidak didukung perangkat ini!";
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(pos => {
+                currentLatLong = `${pos.coords.latitude},${pos.coords.longitude}`;
+                gpsText.innerText = "Lokasi Terkunci (Aman)";
+                snapBtn.disabled = false;
+            }, err => {
+                gpsText.innerText = "Gagal mengunci lokasi. Berikan izin lokasi!";
+            }, { enableHighAccuracy: true });
+        }
+
+        function capture() {
+            const video = document.getElementById('webcam');
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Jepret gambar & render ke canvas
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const base64Photo = canvas.toDataURL('image/jpeg', 0.8);
+            
+            // Matikan Kamera
+            if (streamObject) {
+                streamObject.getTracks().forEach(track => track.stop());
+            }
+
+            // Kirim Data Absen ke Server
+            submitAttendanceData(base64Photo);
+        }
+
+        async function submitAttendanceData(photoBase64) {
+            const snapBtn = document.getElementById('btn-snap');
+            snapBtn.innerText = "Mengirim...";
+            snapBtn.disabled = true;
+
+            const payload = {
+                action: "submitAttendance",
+                data: {
+                    pin: currentPin,
+                    type: currentActionType,
+                    latLong: currentLatLong,
+                    photoBase64: photoBase64,
+                    isBypassRequest: isBypassRequest,
+                    keterangan: bypassReason,
+                    managerPin: bypassManagerPin
+                }
+            };
+
+            try {
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const json = await res.json();
+                
+                if (json.success) {
+                    // Tampilkan Layar Sukses
+                    document.getElementById('success-msg').innerText = json.message;
+                    showScreen('success-screen');
+                    
+                    // Auto Reset setelah 3 detik
+                    setTimeout(() => {
+                        resetKiosk();
+                    }, 3000);
+                } else {
+                    alert("Error: " + json.message);
+                    // Kembalikan ke layar penangkap jika gagal (misal bypass pin manager salah)
+                    showScreen('action-screen');
+                    openActionScreen();
+                }
+            } catch (e) {
+                alert("Koneksi gagal mengirim data absen!");
+                showScreen('action-screen');
+            } finally {
+                // Reset flags
+                isBypassRequest = false;
+                bypassReason = "";
+                bypassManagerPin = "";
+                snapBtn.innerText = "AMBIL FOTO";
+            }
+        }
+
+        // --- SISTEM BYPASS (IZIN PULANG CEPAT) ---
+        function openBypassModal() {
+            openModal('modal-bypass');
+        }
+
+        function submitBypass() {
+            const reason = document.getElementById('bypass-reason').value;
+            const managerPin = document.getElementById('bypass-manager-pin').value;
+            
+            if(!managerPin) return alert("Masukkan PIN Manager!");
+
+            isBypassRequest = true;
+            bypassReason = reason;
+            bypassManagerPin = managerPin;
+
+            closeModal('modal-bypass');
+            
+            // Langsung alihkan ke layar jepret foto & kunci lokasi
+            startCapture('OUT');
+        }
+
+        // --- RESET KIOSK ---
+        function resetKiosk() {
+            currentPin = "";
+            verifiedUser = {};
+            currentActionType = "";
+            currentLatLong = "";
+            updatePinDots();
+            showScreen('pin-screen');
+        }
+
+        // Startup routing
+        if (GAS_URL) {
+            document.getElementById('activation-screen').classList.add('hidden-app');
+            document.getElementById('pin-screen').classList.remove('hidden-app');
+            fetchConfigBg();
+        } else {
+            showScreen('activation-screen');
+        }
+    </script>
+</body>
+</html>
