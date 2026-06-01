@@ -1,4 +1,4 @@
-const CACHE_NAME = 'absen-labarak-v1';
+const CACHE_NAME = 'absen-labarak-v2'; // NAIK VERSI
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
