@@ -68,15 +68,13 @@
         <button onclick="resetLicense()" class="text-[10px] text-red-500 uppercase font-bold mt-4 tracking-wider hover:bg-red-950/20 px-3 py-1.5 rounded-lg smooth-transition">Hapus Lisensi API</button>
     </div>
 
-    <!-- 4. SCREEN ACTION SELECTION (Z-INDEX FIX) -->
+    <!-- 4. SCREEN ACTION SELECTION -->
     <div id="action-screen" class="hidden-screen fixed inset-0 bg-slate-900 flex flex-col items-center justify-center p-6 smooth-transition z-[40]">
         <div class="w-full max-w-sm text-center relative z-[50]">
-            <h3 class="text-xl text-slate-400">Selamat Datang,</h3>
             <h2 id="emp-name" class="text-3xl font-black text-white mt-1 tracking-tight">Karyawan</h2>
             
             <div class="my-8 bg-slate-950/50 border border-slate-800 rounded-2xl p-5 relative z-[50]">
                 <p id="status-msg" class="text-sm font-semibold text-slate-300">Memeriksa status...</p>
-                <!-- WADAH TIMER YANG AMAN -->
                 <div id="timer-container" class="mt-4 hidden-screen">
                     <p class="text-xs text-slate-400">Tombol Pulang Aktif Dalam:</p>
                     <p id="status-timer" class="text-3xl font-black text-amber-500 tracking-wider font-mono mt-1"></p>
@@ -84,7 +82,7 @@
                 <p id="status-sub" class="text-sm mt-3 font-bold text-amber-500"></p>
             </div>
 
-            <!-- TOMBOL DIKUNCI DI LAPISAN PALING ATAS (Z-INDEX 60 & 70) -->
+            <!-- TOMBOL DIKUNCI DI LAPISAN PALING ATAS -->
             <div class="flex flex-col gap-3 w-full relative z-[60]">
                 <button id="btn-clock-in" onclick="startCapture('IN')" class="hidden-screen py-4 bg-emerald-500 text-slate-950 text-lg font-black rounded-2xl active:scale-95 smooth-transition shadow-lg relative z-[70]">ABSEN MASUK</button>
                 <button id="btn-clock-out" onclick="startCapture('OUT')" class="hidden-screen py-4 bg-rose-500 text-white text-lg font-black rounded-2xl active:scale-95 smooth-transition shadow-lg relative z-[70]">ABSEN PULANG</button>
@@ -128,7 +126,7 @@
         </div>
     </div>
 
-    <!-- MODAL: BYPASS ATASAN (Z-INDEX TERKUAT 100) -->
+    <!-- MODAL: BYPASS ATASAN -->
     <div id="modal-bypass" class="hidden-screen fixed inset-0 bg-black/70 z-[100] flex items-center justify-center p-4 smooth-transition">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-sm p-6 shadow-2xl">
             <h3 class="text-lg font-bold text-white mb-2">Form Pulang Cepat</h3>
@@ -187,6 +185,21 @@
         let bypassReason = "";
         let bypassManagerPin = "";
         let deferredPrompt;
+
+        // FUNGSI OPEN MODAL (DIREVISI: DIKEMBALIKAN KE SISTEM)
+        function openModal(id) {
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('hidden-screen');
+        }
+
+        // FUNGSI CLOSE MODAL
+        function closeModal(id) {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('hidden-screen');
+            if(id === 'modal-bypass' && verifiedUser.remainingMs) {
+                startLiveTimer(verifiedUser.remainingMs);
+            }
+        }
 
         function resetLicense() {
             if(confirm("Yakin ingin menghapus Lisensi API dari perangkat ini?")) {
@@ -475,18 +488,6 @@
                 bypassReason = "";
                 bypassManagerPin = "";
                 snapBtn.innerText = "AMBIL FOTO";
-            }
-        }
-
-        function openBypassModal() { 
-            clearInterval(countdownInterval);
-            openModal('modal-bypass'); 
-        }
-        
-        function closeModal(id) { 
-            document.getElementById(id).classList.add('hidden-screen'); 
-            if(id === 'modal-bypass' && verifiedUser.remainingMs) {
-                startLiveTimer(verifiedUser.remainingMs);
             }
         }
 
