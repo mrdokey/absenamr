@@ -36,13 +36,12 @@
         </div>
     </div>
 
-    <!-- 3. SCREEN PIN INPUT (VIRTUAL KEYPAD DENGAN AUTO-ENTER & BACKSPACE) -->
+    <!-- 3. SCREEN PIN INPUT -->
     <div id="pin-screen" class="hidden-screen h-full w-full flex flex-col items-center justify-center p-6 bg-slate-900">
         <img src="https://i.ibb.co.com/934bwtWJ/1780277980692.png" class="w-24 h-24 mb-4">
         <h2 id="absen-resto-name" class="text-xl font-bold text-amber-500 uppercase tracking-widest mb-2">LABARAC BAR</h2>
         <p class="text-xs text-slate-400 mb-6 uppercase tracking-wider">Ketik PIN Anda untuk Absen</p>
         
-        <!-- PIN Dots -->
         <div class="flex gap-4 justify-center mb-8">
             <span class="pin-dot w-4 h-4 rounded-full border-2 border-slate-600 bg-transparent transition-all"></span>
             <span class="pin-dot w-4 h-4 rounded-full border-2 border-slate-600 bg-transparent transition-all"></span>
@@ -50,7 +49,6 @@
             <span class="pin-dot w-4 h-4 rounded-full border-2 border-slate-600 bg-transparent transition-all"></span>
         </div>
 
-        <!-- VIRTUAL KEYPAD (AUTO-ENTER ACTIVE) -->
         <div class="grid grid-cols-3 gap-4 w-full max-w-xs mb-4">
             <button onclick="pressNum('1')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">1</button>
             <button onclick="pressNum('2')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">2</button>
@@ -61,9 +59,8 @@
             <button onclick="pressNum('7')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">7</button>
             <button onclick="pressNum('8')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">8</button>
             <button onclick="pressNum('9')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">9</button>
-            <button onclick="clearPin()" class="h-16 rounded-2xl bg-red-950/40 text-red-500 font-bold text-sm active:scale-95 smooth-transition">CLEAR</button>
+            <button onclick="clearPin()" class="h-16 rounded-2xl bg-red-950/40 text-red-500 font-bold text-lg active:scale-95 smooth-transition">CLEAR</button>
             <button onclick="pressNum('0')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">0</button>
-            <!-- TOMBOL BACKSPACE (MENGGANTIKAN ENTER) -->
             <button onclick="backspacePin()" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-lg active:scale-95 smooth-transition flex items-center justify-center text-amber-500"><i data-lucide="delete" class="w-6 h-6"></i></button>
         </div>
         <button onclick="resetLicense()" class="text-[10px] text-red-500 uppercase font-bold mt-4 tracking-wider hover:bg-red-950/20 px-3 py-1.5 rounded-lg smooth-transition">Hapus Lisensi API</button>
@@ -77,7 +74,8 @@
             
             <div class="my-8 bg-slate-950/50 border border-slate-800 rounded-2xl p-5">
                 <p id="status-msg" class="text-sm font-semibold text-slate-300">Memeriksa status...</p>
-                <p id="status-sub" class="text-xs text-amber-500 mt-2 font-bold"></p>
+                <!-- KOTAK UNTUK TIMER DETIK (REAL-TIME) -->
+                <p id="status-sub" class="text-sm mt-3 font-bold text-amber-500"></p>
             </div>
 
             <div class="flex flex-col gap-3 w-full">
@@ -123,7 +121,7 @@
         </div>
     </div>
 
-    <!-- MODAL: BYPASS ATASAN -->
+    <!-- MODAL BYPASS -->
     <div id="modal-bypass" class="hidden-screen fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 smooth-transition">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-sm p-6 shadow-2xl">
             <h3 class="text-lg font-bold text-white mb-2">Form Pulang Cepat</h3>
@@ -176,6 +174,7 @@
         let currentActionType = ""; 
         let currentLatLong = "";
         let streamObject = null;
+        let countdownInterval; // Variabel interval timer
 
         let isBypassRequest = false;
         let bypassReason = "";
@@ -211,7 +210,6 @@
             dismissInstallBanner();
         }
 
-        // UPDATE PIN DOTS
         function updatePinDots() {
             const dots = document.querySelectorAll('.pin-dot');
             dots.forEach((dot, idx) => {
@@ -225,21 +223,16 @@
             });
         }
 
-        // REVISI 1: AUTO ENTER PIN (SMARTPHONE STYLE)
         function pressNum(num) {
             if (currentPin.length < 4) {
                 currentPin += num;
                 updatePinDots();
-                
-                // Jika sudah genap 4 angka, langsung eksekusi tanpa klik ENTER
                 if (currentPin.length === 4) {
-                    // Jeda 300 milidetik agar bulatan ke-4 sempat menyala kuning (Estetika)
                     setTimeout(verifyPin, 300);
                 }
             }
         }
 
-        // FITUR BARU: BACKSPACE (HAPUS 1 DIGIT)
         function backspacePin() {
             if (currentPin.length > 0) {
                 currentPin = currentPin.slice(0, -1);
@@ -284,7 +277,6 @@
         async function verifyPin() {
             if(currentPin.length < 4) return;
             
-            // Tampilkan animasi memuat di bar bulatan PIN
             const dots = document.querySelectorAll('.pin-dot');
             dots.forEach(dot => dot.classList.add('animate-pulse'));
 
@@ -310,6 +302,40 @@
             }
         }
 
+        // --- SISTEM DETIK TIMER HITUNG MUNDUR (COUNTDOWN) ---
+        function startLiveTimer(durationMs) {
+            clearInterval(countdownInterval); // Bersihkan sisa timer sebelumnya jika ada
+            let msRemaining = durationMs;
+            const subElement = document.getElementById('status-sub');
+
+            function updateTimerVisual() {
+                if (msRemaining <= 0) {
+                    clearInterval(countdownInterval);
+                    // Jika waktu habis, paksa verifikasi ulang PIN agar tombol pulang terbuka otomatis
+                    verifyPin();
+                    return;
+                }
+
+                // Kalkulasi ke Jam : Menit : Detik harian
+                let hours = Math.floor(msRemaining / (1000 * 60 * 60));
+                let minutes = Math.floor((msRemaining % (1000 * 60 * 60)) / (1000 * 60));
+                let seconds = Math.floor((msRemaining % (1000 * 60)) / 1000);
+
+                // Format dua angka (contoh: 08:05:02)
+                let timeStr = [hours, minutes, seconds].map(v => v < 10 ? "0" + v : v).join(":");
+
+                subElement.innerHTML = `
+                    <span class="text-xs text-slate-400">Tombol Pulang Aktif Dalam:</span><br>
+                    <span class="text-2xl font-black text-amber-500 tracking-wider font-mono">${timeStr}</span>
+                `;
+
+                msRemaining -= 1000; // Kurangi 1 detik
+            }
+
+            updateTimerVisual(); // Jalankan sekali instan tanpa nunggu 1 detik pertama
+            countdownInterval = setInterval(updateTimerVisual, 1000);
+        }
+
         function openActionScreen() {
             showScreen('action-screen');
             document.getElementById('emp-name').innerText = verifiedUser.name;
@@ -317,6 +343,10 @@
             const msg = document.getElementById('status-msg');
             const sub = document.getElementById('status-sub');
             
+            // Matikan interval lama jika ada
+            clearInterval(countdownInterval);
+            sub.innerHTML = "";
+
             document.getElementById('btn-clock-in').classList.add('hidden-screen');
             document.getElementById('btn-clock-out').classList.add('hidden-screen');
             document.getElementById('btn-bypass').classList.add('hidden-screen');
@@ -327,17 +357,24 @@
                 document.getElementById('btn-clock-in').classList.remove('hidden-screen');
             } else {
                 msg.innerText = verifiedUser.message; 
+                
                 if (verifiedUser.canClockOut) {
                     sub.innerText = "Anda sudah diizinkan melakukan Absen Pulang.";
                     document.getElementById('btn-clock-out').classList.remove('hidden-screen');
                 } else {
-                    sub.innerText = verifiedUser.remaining; 
+                    // JIKA TERKUNCI: Nyalakan Detik Timer Mundur secara Real-time!
+                    if (verifiedUser.remainingMs) {
+                        startLiveTimer(verifiedUser.remainingMs);
+                    } else {
+                        sub.innerText = "Menghitung sisa shift kerja...";
+                    }
                     document.getElementById('btn-bypass').classList.remove('hidden-screen'); 
                 }
             }
         }
 
         function cancelAction() {
+            clearInterval(countdownInterval);
             if (streamObject) {
                 streamObject.getTracks().forEach(track => track.stop());
             }
@@ -458,6 +495,7 @@
         }
 
         function resetKiosk() {
+            clearInterval(countdownInterval);
             currentPin = "";
             verifiedUser = {};
             currentActionType = "";
