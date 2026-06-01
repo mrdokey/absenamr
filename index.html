@@ -42,6 +42,7 @@
         <h2 id="absen-resto-name" class="text-xl font-bold text-amber-500 uppercase tracking-widest mb-2">LABARAC BAR</h2>
         <p class="text-xs text-slate-400 mb-6 uppercase tracking-wider">Ketik PIN Anda untuk Absen</p>
         
+        <!-- PIN Dots -->
         <div class="flex gap-4 justify-center mb-8">
             <span class="pin-dot w-4 h-4 rounded-full border-2 border-slate-600 bg-transparent transition-all"></span>
             <span class="pin-dot w-4 h-4 rounded-full border-2 border-slate-600 bg-transparent transition-all"></span>
@@ -49,6 +50,7 @@
             <span class="pin-dot w-4 h-4 rounded-full border-2 border-slate-600 bg-transparent transition-all"></span>
         </div>
 
+        <!-- VIRTUAL KEYPAD -->
         <div class="grid grid-cols-3 gap-4 w-full max-w-xs mb-4">
             <button onclick="pressNum('1')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">1</button>
             <button onclick="pressNum('2')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">2</button>
@@ -59,22 +61,22 @@
             <button onclick="pressNum('7')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">7</button>
             <button onclick="pressNum('8')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">8</button>
             <button onclick="pressNum('9')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">9</button>
-            <button onclick="clearPin()" class="h-16 rounded-2xl bg-red-950/40 text-red-500 font-bold text-sm active:scale-95 smooth-transition">CLEAR</button>
+            <button onclick="clearPin()" class="h-16 rounded-2xl bg-red-950/40 text-red-500 font-bold text-lg active:scale-95 smooth-transition">CLEAR</button>
             <button onclick="pressNum('0')" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-2xl active:scale-95 smooth-transition">0</button>
             <button onclick="backspacePin()" class="h-16 rounded-2xl bg-slate-800 hover:bg-slate-700 font-bold text-lg active:scale-95 smooth-transition flex items-center justify-center text-amber-500"><i data-lucide="delete" class="w-6 h-6"></i></button>
         </div>
         <button onclick="resetLicense()" class="text-[10px] text-red-500 uppercase font-bold mt-4 tracking-wider hover:bg-red-950/20 px-3 py-1.5 rounded-lg smooth-transition">Hapus Lisensi API</button>
     </div>
 
-    <!-- 4. SCREEN ACTION SELECTION -->
+    <!-- 4. SCREEN ACTION SELECTION (Z-INDEX FIX) -->
     <div id="action-screen" class="hidden-screen fixed inset-0 bg-slate-900 flex flex-col items-center justify-center p-6 smooth-transition z-[40]">
-        <div class="w-full max-w-sm text-center">
+        <div class="w-full max-w-sm text-center relative z-[50]">
             <h3 class="text-xl text-slate-400">Selamat Datang,</h3>
             <h2 id="emp-name" class="text-3xl font-black text-white mt-1 tracking-tight">Karyawan</h2>
             
-            <div class="my-8 bg-slate-950/50 border border-slate-800 rounded-2xl p-5">
+            <div class="my-8 bg-slate-950/50 border border-slate-800 rounded-2xl p-5 relative z-[50]">
                 <p id="status-msg" class="text-sm font-semibold text-slate-300">Memeriksa status...</p>
-                <!-- WADAH TIMER DIPISAHKAN AGAR TIDAK MENGGANGGU TOMBOL -->
+                <!-- WADAH TIMER YANG AMAN -->
                 <div id="timer-container" class="mt-4 hidden-screen">
                     <p class="text-xs text-slate-400">Tombol Pulang Aktif Dalam:</p>
                     <p id="status-timer" class="text-3xl font-black text-amber-500 tracking-wider font-mono mt-1"></p>
@@ -82,14 +84,12 @@
                 <p id="status-sub" class="text-sm mt-3 font-bold text-amber-500"></p>
             </div>
 
-            <div class="flex flex-col gap-3 w-full relative z-[50]">
-                <button id="btn-clock-in" onclick="startCapture('IN')" class="hidden-screen py-4 bg-emerald-500 text-slate-950 text-lg font-black rounded-2xl active:scale-95 smooth-transition shadow-lg">ABSEN MASUK</button>
-                <button id="btn-clock-out" onclick="startCapture('OUT')" class="hidden-screen py-4 bg-rose-500 text-white text-lg font-black rounded-2xl active:scale-95 smooth-transition shadow-lg">ABSEN PULANG</button>
-                
-                <!-- TOMBOL BYPASS DIPASTIKAN BISA DIKLIK -->
-                <button id="btn-bypass" onclick="openBypassModal()" class="hidden-screen py-4 bg-amber-500/10 text-amber-500 border border-amber-500/30 text-sm font-bold rounded-2xl active:scale-95 smooth-transition relative z-[60] cursor-pointer">IZIN PULANG CEPAT</button>
-                
-                <button onclick="cancelAction()" class="py-3 text-slate-400 font-semibold text-sm">Batal</button>
+            <!-- TOMBOL DIKUNCI DI LAPISAN PALING ATAS (Z-INDEX 60 & 70) -->
+            <div class="flex flex-col gap-3 w-full relative z-[60]">
+                <button id="btn-clock-in" onclick="startCapture('IN')" class="hidden-screen py-4 bg-emerald-500 text-slate-950 text-lg font-black rounded-2xl active:scale-95 smooth-transition shadow-lg relative z-[70]">ABSEN MASUK</button>
+                <button id="btn-clock-out" onclick="startCapture('OUT')" class="hidden-screen py-4 bg-rose-500 text-white text-lg font-black rounded-2xl active:scale-95 smooth-transition shadow-lg relative z-[70]">ABSEN PULANG</button>
+                <button id="btn-bypass" onclick="openBypassModal()" class="hidden-screen py-4 bg-amber-500/10 text-amber-500 border border-amber-500/30 text-sm font-bold rounded-2xl active:scale-95 smooth-transition relative z-[70] cursor-pointer">IZIN PULANG CEPAT</button>
+                <button onclick="cancelAction()" class="py-3 text-slate-400 font-semibold text-sm relative z-[70]">Batal</button>
             </div>
         </div>
     </div>
@@ -128,8 +128,8 @@
         </div>
     </div>
 
-    <!-- MODAL BYPASS (Z-INDEX DIPERKUAT) -->
-    <div id="modal-bypass" class="hidden-screen fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4 smooth-transition">
+    <!-- MODAL: BYPASS ATASAN (Z-INDEX TERKUAT 100) -->
+    <div id="modal-bypass" class="hidden-screen fixed inset-0 bg-black/70 z-[100] flex items-center justify-center p-4 smooth-transition">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-sm p-6 shadow-2xl">
             <h3 class="text-lg font-bold text-white mb-2">Form Pulang Cepat</h3>
             <p class="text-xs text-slate-400 mb-4">Mohon pilih alasan & minta verifikasi atasan.</p>
@@ -369,7 +369,6 @@
                     } else {
                         sub.innerText = verifiedUser.remaining;
                     }
-                    // TAMPILKAN TOMBOL BYPASS DENGAN AMAN
                     document.getElementById('btn-bypass').classList.remove('hidden-screen'); 
                 }
             }
@@ -480,14 +479,12 @@
         }
 
         function openBypassModal() { 
-            // Pastikan timer berhenti sejenak saat pop-up izin terbuka agar aman dari bentrok klik
             clearInterval(countdownInterval);
             openModal('modal-bypass'); 
         }
         
         function closeModal(id) { 
             document.getElementById(id).classList.add('hidden-screen'); 
-            // Nyalakan kembali timer jika batal izin
             if(id === 'modal-bypass' && verifiedUser.remainingMs) {
                 startLiveTimer(verifiedUser.remainingMs);
             }
